@@ -24,20 +24,21 @@ Group 22 - Brooke Mackenzie Dolny (bmdolny), Navraj Singh Chhina (nschhina), Wes
 - [x] random car spawner and random destinations **(Wesley)**
 - [x] implement pre-timed traffic light system **(Wesley)**
 - [x] implement grid layout of city **(Brooke)**
-- [x] display traffic map of city in console, may skip and implement graphical display (Stage 3/4) instead **(Wesley and Navraj)**
+- [x] display traffic map of city in console **(Wesley and Navraj)**
 - [x] working simulation
 
 ### Stage 3: Prototype Improvements
-*Target Date: Sunday, October 29th*
+*Target Date: Monday, October 30th*
+- [ ] implement graph loading from file functionality **(Wesley)**
 - [ ] efficiency calculator **(Navraj)**
 - [ ] take one-way roads into account **(Navraj)**
 - [ ] develop model for speed of cars based on congestion **(Navraj)**
 - [ ] small random factor of speed of cars **(Wesley)**
 - [ ] implement first iteration of optimization algorithm **(Wesley)**
-- [ ] basic display of flow of vehicles on roads **(Brooke)**
+- [x] basic display of flow of vehicles on roads **(Brooke)**
 
 ### Stage 4: Graphical Display and Traffic Light Synchronization
-*Target Date: Thursday, November 2nd*
+*Target Date: Friday, November 3rd*
 - [ ] program should be able to run from a Raspberry Pi connected to an LCD screen **(Wesley and Navraj)**
 - [ ] display traffic map of city on an LCD screen **(Navraj and Brooke)**
 - [ ] display additional information such as the volume of vehicles, average travel time, congestion level of a specific roads **(Brooke)**
@@ -46,14 +47,14 @@ Group 22 - Brooke Mackenzie Dolny (bmdolny), Navraj Singh Chhina (nschhina), Wes
 - [ ] replace assert statements with error and warning log **(Wesley)**
 
 ### Stage 5: User Interaction
-*Target Date: Thursday, November 9th*
+*Target Date: Friday, November 10th*
 - [ ] allow user to control speed of simulation **(Wesley)**
 - [ ] allow user to add cars, select destination, change road layout **(Wesley)**
 - [ ] allow user to make slight modifications to the algorithm (such as how quickly it responds to changes in the environment) **(Wesley)**
 - [ ] improve graphical interface, and add methods to modify environment variables **(Brooke)**
 
 ### Stage 6: Secondary Display/Physical Model (Tentative)
-*Target Date: Thursday, November 16th*
+*Target Date: Friday, November 17th*
 - [ ] connect secondary display **(Navraj)**
 - [ ] implement secondary display or physical model of city **(Brooke)**
 - [ ] allow close up of a portion of the map **(Wesley)**
@@ -69,6 +70,7 @@ Group 22 - Brooke Mackenzie Dolny (bmdolny), Navraj Singh Chhina (nschhina), Wes
 ### Stretch Tasks
 *Only if there is time*
 - [ ] pedestrian traffic
+- [ ] U-Turns
 - [ ] non-controlled intersections (no traffic lights)
 - [ ] accidents, road closures, weather
 - [ ] drivers not following rules

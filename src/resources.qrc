@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>data/fixedIntxnRoadsRandCarDemo.txt</file>
+    </qresource>
+</RCC>

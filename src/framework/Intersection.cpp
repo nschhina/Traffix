@@ -176,8 +176,8 @@ void Intersection::connect(int from, int to, int type) {
  * @param B the ID of the other traffic light
  */
 void Intersection::link(int A, int B) {
-    assert(lightFromID[A]->getType() == STRAIGHT && "light A must be of type straight");
     int AType = lightFromID[A]->getType();
+    assert(AType == STRAIGHT && "light A must be of type straight");
     int BType = lightFromID[B]->getType();
     if (BType == LEFT) {
         linksLeft[A].insert(B);
