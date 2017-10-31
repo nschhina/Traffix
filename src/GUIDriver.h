@@ -22,7 +22,7 @@ private:
     WeightedDigraph *G; // the city represented as a weighted directed graph
     double iterationsPerSecond; // the number of iterations per second the simulation should execute
     double iterationLength; // the length of one iteration
-    int carsPerIteration; // the number of cars added per iteration
+    int carsPerSecond; // the number of cars added per second
     void draw();
 
 public:

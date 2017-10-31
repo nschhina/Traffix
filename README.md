@@ -31,14 +31,14 @@ Group 22 - Brooke Mackenzie Dolny (bmdolny), Navraj Singh Chhina (nschhina), Wes
 *Target Date: Monday, October 30th*
 - [ ] implement graph loading from file functionality **(Wesley)**
 - [ ] efficiency calculator **(Navraj)**
-- [ ] take one-way roads into account **(Navraj)**
-- [ ] develop model for speed of cars based on congestion **(Navraj)**
-- [ ] small random factor of speed of cars **(Wesley)**
+- [x] take one-way roads into account **(Navraj)**
+- [x] develop model for speed of cars based on congestion **(Navraj)**
+- [x] small random factor of speed of cars **(Wesley)**
 - [ ] implement first iteration of optimization algorithm **(Wesley)**
 - [x] basic display of flow of vehicles on roads **(Brooke)**
 
 ### Stage 4: Graphical Display and Traffic Light Synchronization
-*Target Date: Friday, November 3rd*
+*Target Date: Sunday, November 4th*
 - [ ] program should be able to run from a Raspberry Pi connected to an LCD screen **(Wesley and Navraj)**
 - [ ] display traffic map of city on an LCD screen **(Navraj and Brooke)**
 - [ ] display additional information such as the volume of vehicles, average travel time, congestion level of a specific roads **(Brooke)**
@@ -47,7 +47,7 @@ Group 22 - Brooke Mackenzie Dolny (bmdolny), Navraj Singh Chhina (nschhina), Wes
 - [ ] replace assert statements with error and warning log **(Wesley)**
 
 ### Stage 5: User Interaction
-*Target Date: Friday, November 10th*
+*Target Date: Saturday, November 11th*
 - [ ] allow user to control speed of simulation **(Wesley)**
 - [ ] allow user to add cars, select destination, change road layout **(Wesley)**
 - [ ] allow user to make slight modifications to the algorithm (such as how quickly it responds to changes in the environment) **(Wesley)**

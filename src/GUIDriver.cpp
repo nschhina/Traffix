@@ -31,7 +31,7 @@ GUIDriver::GUIDriver(int argc, char *argv[], double iterationsPerSecond, string 
     controller = new PretimedController(G);
     sim = new Simulation(controller);
     int cntIntersections, cntRoadSegments, cntConnections, cntCars;
-    in >> cntIntersections >> cntRoadSegments >> cntConnections >> cntCars >> carsPerIteration;
+    in >> cntIntersections >> cntRoadSegments >> cntConnections >> cntCars >> carsPerSecond;
     Intersection *intersections[cntIntersections];
     for (int i = 0; i < cntIntersections; i++) {
         double x, y;
@@ -80,6 +80,7 @@ GUIDriver::~GUIDriver() {
 void GUIDriver::run() {
     bool exit = false;
     auto start = chrono::high_resolution_clock::now();
+    auto lastCarSpawn = chrono::high_resolution_clock::now();
     while (!exit) {
         auto end = chrono::high_resolution_clock::now();
         chrono::duration<double> elapsed = end - start;
@@ -88,10 +89,14 @@ void GUIDriver::run() {
             elapsed = end - start;
         }
         start = end;
-        sim->nextIteration(iterationsPerSecond);
-        for (int i = 0; i < carsPerIteration; i++) {
-            Car *c = getRandomCar(G);
-            c->setSpeed(c->getCurrentRoad()->getSpeedLimit());
+        sim->nextIteration(iterationLength);
+        chrono::duration<double> timeSinceLastCar = end - lastCarSpawn;
+        if (timeSinceLastCar.count() >= 1.0 / ((double) carsPerSecond)) {
+            for (int i = 0; i < timeSinceLastCar.count() * ((double) carsPerSecond); i++) {
+                Car *c = getRandomCar(G);
+                c->setSpeed(c->getCurrentRoad()->getSpeedLimit());
+            }
+            lastCarSpawn = end;
         }
         draw();
     }
