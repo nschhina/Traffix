@@ -46,6 +46,7 @@ public:
     void link(int A, int B);
     // void assign();
     void cycle();
+    int getCurrentCycle() const;
     bool leftTurnSignalOn() const;
     int outdegree() const;
     int indegree() const;

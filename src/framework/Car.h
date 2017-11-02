@@ -19,6 +19,7 @@ private:
     double currentSpeed; // the car's curent speed
     Point2D currentLocation; // the car's current location
     RoadSegment *currentRoad; // the road the car is currently on
+    RoadSegment *finalRoad; // the final road the car will travel on
     Point2D source; // the x y location of the source
     Point2D destination; // the x y location of the destination
     std::vector<RoadSegment*> sourceRoads; // possible roads the that lead directly out from the source
@@ -38,7 +39,8 @@ public:
     void setSpeed(double speed);
     RoadSegment *getCurrentRoad() const;
     bool hasNextRoad() const;
-    RoadSegment *getNextRoad() const;
+    RoadSegment *getNextRoad();
+    RoadSegment *peekNextRoad() const;
     void setRoad(RoadSegment *road);
     Point2D getCurrentLocation() const;
     void setLocation(Point2D &location);

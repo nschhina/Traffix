@@ -101,10 +101,13 @@ void RoadSegment::subtractFlow(int value) {
  * @param c the pointer to the car
  */
 bool RoadSegment::addCar(Car *c) {
+    assert(incoming.count(c->getID()) > 0 && "car is not scheduled to be on this road");
     if (cars.count(c->getID()) > 0 || flow + 1 > capacity) return false;
     addFlow(1);
     cars[c->getID()] = c;
+    incoming.erase(c->getID());
     c->setRoad(this);
+    if (c->hasNextRoad()) c->peekNextRoad()->addIncoming(c);
     return true;
 }
 
@@ -114,6 +117,8 @@ bool RoadSegment::addCar(Car *c) {
  * @param c the pointer to the car
  */
 bool RoadSegment::removeCar(Car *c) {
+    assert(inQueue.count(c->getID()) == 0);
+    assert(incoming.count(c->getID()) == 0);
     if (cars.count(c->getID()) == 0 || flow - 1 < 0) return false;
     subtractFlow(1);
     cars.erase(c->getID());
@@ -184,6 +189,14 @@ int RoadSegment::countCarsInQueue() const { return inQueue.size(); };
 bool RoadSegment::isStopped(int id) const {
     assert(cars.count(id) > 0 && "car is not in road");
     return inQueue.count(id) > 0;
+}
+
+/**
+ * Schedules the car to go on this road next.
+ */
+void RoadSegment::addIncoming(Car *c) {
+    assert(incoming.count(c->getID()) == 0 && "car is already scheduled to go on this road");
+    incoming.insert(c->getID());
 }
 
 /**

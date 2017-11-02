@@ -92,7 +92,7 @@ void GUIDriver::run() {
         sim->nextIteration(iterationLength);
         chrono::duration<double> timeSinceLastCar = end - lastCarSpawn;
         if (timeSinceLastCar.count() >= 1.0 / ((double) carsPerSecond)) {
-            for (int i = 0; i < timeSinceLastCar.count() * ((double) carsPerSecond); i++) {
+            for (int i = 0; i < (int) floor(timeSinceLastCar.count() * ((double) carsPerSecond)); i++) {
                 Car *c = getRandomCar(G);
                 c->setSpeed(c->getCurrentRoad()->getSpeedLimit());
             }

@@ -158,7 +158,7 @@ void Intersection::connect(int from, int to, int type) {
     assert(outboundRoads.count(to) && "no outbound road exists in the intersection");
     adjacentOut[from].insert(to);
     adjacentIn[to].insert(from);
-    TrafficLight *t = new TrafficLight(type);
+    TrafficLight *t = new TrafficLight(inboundRoads[from], outboundRoads[to], type);
     lights[make_pair(from, to)] = t;
     lightFromID[t->getID()] = t;
     if (t->getType() == STRAIGHT) {
@@ -264,6 +264,11 @@ void Intersection::cycle() {
         }
     }
 }
+
+/**
+ * Returns the current cycle number in the intersection.
+ */
+int Intersection::getCurrentCycle() const { return currentCycleNumber; }
 
 /**
  * Returns true if any left turn signal is on, false otherwise.

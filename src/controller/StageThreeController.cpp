@@ -45,6 +45,6 @@ void StageThreeController::runEvents(double currentTime) {
         if (n->leftTurnSignalOn()) events.push(make_pair(currentTime + 10.0, n->getID())); // 10 seconds for left signals
         else events.push(make_pair(currentTime + 30.0 - (10.0 * prevLeft), n->getID())); // 20 seconds if there was just a left signal, 30 otherwise
     }
-    // add road segments to traffic light, get current cycle number in intersection, if green, check if net flow is less than 2 times the opposite flow
+    // get current cycle number in intersection, if green, check if net flow is less than 2 times the opposite flow
     // if so, then cycle the lights
 }

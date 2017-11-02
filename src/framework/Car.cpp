@@ -41,8 +41,15 @@ Car::Car(Point2D &source, Point2D &destination, vector<RoadSegment*> &sourceRoad
             break;
         }
     }
+    for (RoadSegment *r : destinationRoads) {
+        if (r->getSource()->getID() == path->getDestinationID()) {
+            finalRoad = r;
+            break;
+        }
+    }
+    pathIndex = -1;
+    currentRoad->addIncoming(this);
     assert(currentRoad->addCar(this));
-    pathIndex = 0;
 }
 
 /**
@@ -69,15 +76,25 @@ RoadSegment *Car::getCurrentRoad() const { return currentRoad; }
  * Returns true if the car has another road on its path, false otherwise.
  */
 bool Car::hasNextRoad() const {
-    return pathIndex == path->getShortestPath().size();
+    return pathIndex + 1 <= path->getShortestPath().size();
 }
 
 /**
- * Returns the next road on the car's path if there is a next road.
+ * Returns the next road on the car's path if there is a next road and updates the pathIndex.
  */
-RoadSegment *Car::getNextRoad() const {
+RoadSegment *Car::getNextRoad() {
     assert(hasNextRoad() && "car does not have another road on its path");
-    return path->getShortestPath()[pathIndex + 1];
+    RoadSegment *r = peekNextRoad();
+    pathIndex++;
+    return r;
+}
+
+/**
+ * Returns the next road on the car's path.
+ */
+RoadSegment *Car::peekNextRoad() const {
+    assert(hasNextRoad() && "car does not have another road on its path");
+    return pathIndex + 1 < path->getShortestPath().size() ? path->getShortestPath()[pathIndex + 1] : finalRoad;
 }
 
 /**
