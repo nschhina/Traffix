@@ -1,4 +1,7 @@
 #include <assert.h>
+#include <cmath>
+#include <ctime>
+#include <random>
 #include "RoadSegment.h"
 
 using namespace std;
@@ -74,6 +77,24 @@ int RoadSegment::getFlow() const { return flow; }
  */
 int RoadSegment::getCapacity() const { return this->capacity; }
 
+/**
+ * Returns the projected speed of cars on this road given based on the model -cosh(1.25 * x) + 2.
+ */
+double RoadSegment::getProjectedSpeed() const {
+    double factor = -cosh(1.25 * (double) flow / (double) capacity) + 2.0;
+    assert(factor <= 1.0 + EPS && factor >= 0.1115 - EPS);
+    return factor * speedLimit;
+}
+
+/**
+ * Returns a random speed of cars on this road with a mean equal to the projected speed and standard deviation of 20% of the projected speed.
+ */
+double RoadSegment::getRandomSpeed() const {
+    default_random_engine generator(time(0));
+    double proj = getProjectedSpeed();
+    normal_distribution<double> distribution(proj, proj * 0.2);
+    return max(MIN_SPEED, distribution(generator));
+}
 
 /**
  * Adds the specified amount of flow to the road segment. The value added must be non-negative and the flow cannot exceed the capacity.
@@ -107,6 +128,7 @@ bool RoadSegment::addCar(Car *c) {
     cars[c->getID()] = c;
     incoming.erase(c->getID());
     c->setRoad(this);
+    c->setSpeed(getRandomSpeed());
     if (c->hasNextRoad()) c->peekNextRoad()->addIncoming(c);
     return true;
 }

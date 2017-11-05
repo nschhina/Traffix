@@ -1,17 +1,17 @@
-#include "StageThreeController.h"
+#include "BasicController.h"
 
 using namespace std;
 
 /**
- * Initializes the StageThreeController given a Weighted Directed Graph.
+ * Initializes the BasicController given a Weighted Directed Graph.
  * @param G the Weighted Directed Graph that the controller will control
  */
-StageThreeController::StageThreeController(WeightedDigraph *G) : Controller(G) {}
+BasicController::BasicController(WeightedDigraph *G) : Controller(G) {}
 
 /**
- * Deconstructs the StageThreeController.
+ * Deconstructs the BasicController.
  */
-StageThreeController::~StageThreeController() {}
+BasicController::~BasicController() {}
 
 /**
  * Adds an event with a specified intersection ID at a specified time.
@@ -19,7 +19,7 @@ StageThreeController::~StageThreeController() {}
  * @param time the specified time the event will occur
  * @param id the intersection ID of the event
  */
-void StageThreeController::addEvent(double time, int id) {
+void BasicController::addEvent(double time, int id) {
     events.push(make_pair(time, id));
 }
 
@@ -28,7 +28,7 @@ void StageThreeController::addEvent(double time, int id) {
  * Returns false otherwise.
  * @param currentTime the current time
  */
-bool StageThreeController::checkNextEvent(double currentTime) const {
+bool BasicController::checkNextEvent(double currentTime) const {
     return currentTime >= events.top().first;
 }
 
@@ -37,14 +37,18 @@ bool StageThreeController::checkNextEvent(double currentTime) const {
  * next events to the event queue.
  * @param currentTime the current time
  */
-void StageThreeController::runEvents(double currentTime) {
+void BasicController::runEvents(double currentTime) {
     while (!events.empty() && events.top().first <= currentTime) {
         Intersection *n = G->getIntersection(events.top().second);
-        bool prevLeft = n->leftTurnSignalOn();
-        n->cycle();
+        events.pop();
+        n->cycle(currentTime);
         if (n->leftTurnSignalOn()) events.push(make_pair(currentTime + 10.0, n->getID())); // 10 seconds for left signals
-        else events.push(make_pair(currentTime + 30.0 - (10.0 * prevLeft), n->getID())); // 20 seconds if there was just a left signal, 30 otherwise
     }
     // get current cycle number in intersection, if green, check if net flow is less than 2 times the opposite flow
     // if so, then cycle the lights
+    for (pair<int, Intersection*> n : G->getIntersections()) {
+        if (n.second->getTimeSinceLastCycle() - currentTime < MIN_TIME || n.second->leftTurnSignalOn()) continue;
+        else if (n.second->getTimeSinceLastCycle() - currentTime >= MAX_TIME && n.second->getOppositeFlow() != 0) events.push(make_pair(currentTime + 10.0, n.first));
+        else if (n.second->getCurrentFlow() < 2 * n.second->getOppositeFlow()) events.push(make_pair(currentTime + 10.0, n.first));
+    }
 }

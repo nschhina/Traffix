@@ -8,6 +8,8 @@
 #include "Intersection.h"
 #include "Car.h"
 
+#define MIN_SPEED 0.001
+
 struct RoadSegment {
 private:
     static const double EPS;
@@ -39,6 +41,8 @@ public:
     double getExpectedTime() const;
     int getFlow() const;
     int getCapacity() const;
+    double getProjectedSpeed() const;
+    double getRandomSpeed() const;
     bool addCar(Car *c);
     bool removeCar(Car *c);
     bool carOnRoad(Car *c);

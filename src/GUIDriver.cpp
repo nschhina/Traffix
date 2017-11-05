@@ -8,6 +8,7 @@
 #include <QTextStream>
 #include "GUIDriver.h"
 #include "controller/PretimedController.h"
+#include "controller/BasicController.h"
 
 using namespace std;
 
@@ -17,8 +18,9 @@ using namespace std;
  * @param argv should be the array of arguments from main
  * @param iterationsPerSecond the number of iterations to be executed in the simulator per second
  * @param fileName the file to load the city
+ * @param controllerType 0 if PretimedController, 1 for BasicController
  */
-GUIDriver::GUIDriver(int argc, char *argv[], double iterationsPerSecond, string fileName) {
+GUIDriver::GUIDriver(int argc, char *argv[], double iterationsPerSecond, string fileName, int controllerType) {
     assert(iterationsPerSecond > 0.0 && "iterationsPerSecond must be a positive value");
     this->iterationsPerSecond = iterationsPerSecond;
     iterationLength = 1.0 / iterationsPerSecond;
@@ -28,7 +30,8 @@ GUIDriver::GUIDriver(int argc, char *argv[], double iterationsPerSecond, string 
     file.open(QIODevice::ReadOnly | QIODevice::Text);
     QTextStream in(&file);
     G = new WeightedDigraph();
-    controller = new PretimedController(G);
+    if (controllerType == 0) controller = new PretimedController(G);
+    else if (controllerType == 1) controller = new BasicController(G);
     sim = new Simulation(controller);
     int cntIntersections, cntRoadSegments, cntConnections, cntCars;
     in >> cntIntersections >> cntRoadSegments >> cntConnections >> cntCars >> carsPerSecond;
@@ -51,11 +54,11 @@ GUIDriver::GUIDriver(int argc, char *argv[], double iterationsPerSecond, string 
         intersections[intxn]->connect(from, to, type);
     }
     for (int i = 0; i < cntCars; i++) {
-        Car *c = getRandomCar(G);
-        c->setSpeed(c->getCurrentRoad()->getSpeedLimit());
+        Car *c = getRandomCar(G, 0.0);
+        c->setSpeed(c->getCurrentRoad()->getRandomSpeed());
     }
     for (int i = 0; i < cntIntersections; i++) {
-        intersections[i]->cycle();
+        controller->addEvent(intersections[i]->getID(), 0.0);
     }
     file.close();
     app = new QApplication(argc, argv);
@@ -93,8 +96,8 @@ void GUIDriver::run() {
         chrono::duration<double> timeSinceLastCar = end - lastCarSpawn;
         if (timeSinceLastCar.count() >= 1.0 / ((double) carsPerSecond)) {
             for (int i = 0; i < (int) floor(timeSinceLastCar.count() * ((double) carsPerSecond)); i++) {
-                Car *c = getRandomCar(G);
-                c->setSpeed(c->getCurrentRoad()->getSpeedLimit());
+                Car *c = getRandomCar(G, sim->getCurrentTime());
+                c->setSpeed(c->getCurrentRoad()->getRandomSpeed());
             }
             lastCarSpawn = end;
         }

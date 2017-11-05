@@ -29,16 +29,15 @@ Group 22 - Brooke Mackenzie Dolny (bmdolny), Navraj Singh Chhina (nschhina), Wes
 
 ### Stage 3: Prototype Improvements
 *Target Date: Monday, October 30th*
-- [ ] implement graph loading from file functionality **(Wesley)**
-- [ ] efficiency calculator **(Navraj)**
+- [x] efficiency calculator **(Wesley)**
 - [x] take one-way roads into account **(Navraj)**
 - [x] develop model for speed of cars based on congestion **(Navraj)**
 - [x] small random factor of speed of cars **(Wesley)**
-- [ ] implement first iteration of optimization algorithm **(Wesley)**
+- [x] implement first iteration of optimization algorithm **(Wesley)**
 - [x] basic display of flow of vehicles on roads **(Brooke)**
 
 ### Stage 4: Graphical Display and Traffic Light Synchronization
-*Target Date: Sunday, November 4th*
+*Target Date: Sunday, November 5th*
 - [ ] program should be able to run from a Raspberry Pi connected to an LCD screen **(Wesley and Navraj)**
 - [ ] display traffic map of city on an LCD screen **(Navraj and Brooke)**
 - [ ] display additional information such as the volume of vehicles, average travel time, congestion level of a specific roads **(Brooke)**

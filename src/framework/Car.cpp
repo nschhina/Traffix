@@ -8,6 +8,8 @@
 using namespace std;
 
 int Car::counter = 0; // counter starts at 0
+double Car::efficiency = 1.0;
+int Car::reached = 0;
 
 /**
  * Initializes a car given the starting and ending point.
@@ -15,13 +17,16 @@ int Car::counter = 0; // counter starts at 0
  * @param destination the exact location of the destination in the x, y plane
  * @param sourceRoads the road segments the lead out of the source
  * @param destinationRoads the road segments that lead into the destination
+ * @param currentTime the current time in the simulation
  * @param G the Weighted Directed Graph
  */
-Car::Car(Point2D &source, Point2D &destination, vector<RoadSegment*> &sourceRoads, vector<RoadSegment*> &destinationRoads, WeightedDigraph *G) {
+Car::Car(Point2D &source, Point2D &destination, vector<RoadSegment*> &sourceRoads, vector<RoadSegment*> &destinationRoads, double currentTime, WeightedDigraph *G) {
     this->source = source;
     this->destination = destination;
-    this->sourceRoads = sourceRoads; // copies the roads
-    this->destinationRoads = destinationRoads; // copies the roads
+    this->sourceRoads = sourceRoads;
+    this->destinationRoads = destinationRoads;
+    this->startTime = currentTime;
+    this->expectedTime = 0.0;
     id = counter++;
     for (RoadSegment *r : sourceRoads) {
         assert(r->getCapacity() - r->getFlow() >= 1);
@@ -34,16 +39,21 @@ Car::Car(Point2D &source, Point2D &destination, vector<RoadSegment*> &sourceRoad
     }
     path = new DijkstraDirectedSP(G, sourceIntersections, initialTime, destinationIntersections, excessTime);
     assert(path->hasPath() && "there is no path for the car to reach the destination from the source");
+    for (RoadSegment *r : path->getShortestPath()) {
+        expectedTime += r->getExpectedTime();
+    }
     currentLocation = this->source;
     for (RoadSegment *r : sourceRoads) {
         if (r->getDestination()->getID() == path->getSourceID()) {
             currentRoad = r;
+            expectedTime += currentRoad->getDestination()->getLocation().distanceTo(source);
             break;
         }
     }
     for (RoadSegment *r : destinationRoads) {
         if (r->getSource()->getID() == path->getDestinationID()) {
             finalRoad = r;
+            expectedTime += finalRoad->getSource()->getLocation().distanceTo(destination);
             break;
         }
     }
@@ -56,6 +66,16 @@ Car::Car(Point2D &source, Point2D &destination, vector<RoadSegment*> &sourceRoad
  * Returns the unique ID of the car.
  */
 int Car::getID() const { return id; }
+
+/**
+ * Returns the time elapsed in the car's jouney so far.
+ */
+double Car::getElapsedTime(double currentTime) const { return currentTime - startTime; }
+
+/**
+ * Returns the time expected for the car to complete its journey assuming no traffic.
+ */
+double Car::getExpectedTime() const { return expectedTime; }
 
 /**
  * Returns the car's current speed.
@@ -123,10 +143,19 @@ Point2D Car::getSource() const { return source; }
 Point2D Car::getDestination() const { return destination; }
 
 /**
- * Deconstructs the Car
+ * Deconstructs the Car and updates the efficiency
  */
 Car::~Car() {
     delete path;
+}
+
+/**
+ * Updates the efficiency of the car.
+ * @param endTime the time the car reached the destination.
+ */
+void Car::updateEfficiency(double endTime) {
+    efficiency = ((efficiency * reached) + (expectedTime / (endTime - startTime))) / (reached + 1);
+    reached++;
 }
 
 /**
@@ -156,7 +185,7 @@ Point2D getRandomLocation(RoadSegment *r) {
  * Returns a car with a randomly generated source and destination.
  * MAKE SURE THAT RAND HAS A SEED
  */
-Car *getRandomCar(WeightedDigraph *G) {
+Car *getRandomCar(WeightedDigraph *G, double currentTime) {
     RoadSegment *src = getRandomRoadSegment(G), *dest = nullptr;
     do {
         dest = getRandomRoadSegment(G);
@@ -166,5 +195,5 @@ Car *getRandomCar(WeightedDigraph *G) {
     destinationRoads.push_back(dest);
     Point2D srcLoc = getRandomLocation(src);
     Point2D destLoc = getRandomLocation(dest);
-    return new Car(srcLoc, destLoc, sourceRoads, destinationRoads, G);
+    return new Car(srcLoc, destLoc, sourceRoads, destinationRoads, currentTime, G);
 }

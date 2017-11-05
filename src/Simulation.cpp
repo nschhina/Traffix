@@ -23,6 +23,11 @@ Simulation::Simulation(Controller *controller) {
 Simulation::~Simulation() {}
 
 /**
+ * Returns the current time in the simulation.
+ */
+double Simulation::getCurrentTime() { return currentTime; }
+
+/**
  * Performs the next iteration in the simulation.
  * @param timeElapsed the time elasped since the last iteration
  */
@@ -53,6 +58,7 @@ void Simulation::nextIteration(double timeElapsed) {
                     RoadSegment *rp = c->getNextRoad();
                     assert(rp->addCar(c) && "car was already on road");
                 } else {
+                    c->updateEfficiency(currentTime);
                     delete c;
                 }
             }
@@ -78,9 +84,9 @@ void Simulation::nextIteration(double timeElapsed) {
         }
         for (pair<int, int> c : toDelete) {
             Car *car = r.second->getCar(c.first);
-            RoadSegment *cur = car->getCurrentRoad();
             assert(r.second->removeCar(car) && "car not on road");
             if (c.second == 1) {
+                car->updateEfficiency(currentTime);
                 delete car;
             } else if (car->hasNextRoad()) {
                 if (car->peekNextRoad()->getCapacity() - car->peekNextRoad()->getFlow() < 1) continue;
@@ -88,6 +94,7 @@ void Simulation::nextIteration(double timeElapsed) {
                 assert(rp->addCar(car) && "car was already on road");
                 car->setLocation(dest);
             } else {
+                car->updateEfficiency(currentTime);
                 delete car;
             }
         }

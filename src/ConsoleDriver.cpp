@@ -41,11 +41,11 @@ ConsoleDriver::ConsoleDriver(double iterationsPerSecond, string file) {
         intersections[intxn]->connect(from, to, type);
     }
     for (int i = 0; i < cntCars; i++) {
-        Car *c = getRandomCar(G);
+        Car *c = getRandomCar(G, 0.0);
         c->setSpeed(c->getCurrentRoad()->getSpeedLimit());
     }
     for (int i = 0; i < cntIntersections; i++) {
-        intersections[i]->cycle();
+        controller->addEvent(intersections[i]->getID(), 0.0);
     }
 }
 
@@ -75,7 +75,7 @@ void ConsoleDriver::run() {
         chrono::duration<double> timeSinceLastCar = end - lastCarSpawn;
         if (timeSinceLastCar.count() >= 1.0 / ((double) carsPerSecond)) {
             for (int i = 0; i < (int) floor(timeSinceLastCar.count() * ((double) carsPerSecond)); i++) {
-                Car *c = getRandomCar(G);
+                Car *c = getRandomCar(G, sim->getCurrentTime());
                 c->setSpeed(c->getCurrentRoad()->getSpeedLimit());
             }
             lastCarSpawn = end;

@@ -1,13 +1,16 @@
-#ifndef PRETIMEDCONTROLLER_H_
-#define PRETIMEDCONTROLLER_H_
+#ifndef BASICCONTROLLER_H_
+#define BASICCONTROLLER_H_
 
 #include "../framework/Framework.h"
 #include "Controller.h"
 
-struct PretimedController : public Controller {
+#define MIN_TIME 5
+#define MAX_TIME 50
+
+struct BasicController : public Controller {
 public:
-    PretimedController(WeightedDigraph *G);
-    ~PretimedController();
+    BasicController(WeightedDigraph *G);
+    ~BasicController();
     void addEvent(double time, int id);
     bool checkNextEvent(double currentTime) const;
     void runEvents(double currentTime);

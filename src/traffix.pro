@@ -25,6 +25,7 @@ SOURCES += \
         Simulation.cpp \
         controller/Controller.cpp \
         controller/PretimedController.cpp \
+        controller/BasicController.cpp \
         gui/gui.cpp \
         framework/Car.cpp \
         framework/DijkstraDirectedSP.cpp \
@@ -39,8 +40,9 @@ HEADERS += \
         GUIDriver.h \
         Simulation.h \
         gui/gui.h \
-        controller/Controller.cpp \
-        controller/PretimedController.cpp \
+        controller/Controller.h \
+        controller/PretimedController.h \
+        controller/BasicController.h \
         misc/pair_hash.h \
         framework/Framework.h
 

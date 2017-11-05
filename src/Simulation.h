@@ -17,6 +17,7 @@ private:
 public:
     Simulation(Controller *controller);
     ~Simulation();
+    double getCurrentTime();
     void nextIteration(double timeElapsed);
 };
 

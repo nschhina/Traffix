@@ -26,7 +26,7 @@ private:
     void draw();
 
 public:
-    GUIDriver(int argc, char *argv[], double iterationsPerSecond, std::string fileName);
+    GUIDriver(int argc, char *argv[], double iterationsPerSecond, std::string fileName, int controllerType);
     ~GUIDriver();
     void run();
 };
