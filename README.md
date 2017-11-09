@@ -41,8 +41,8 @@ Group 22 - Brooke Mackenzie Dolny (bmdolny), Navraj Singh Chhina (nschhina), Wes
 - [ ] program should be able to run from a Raspberry Pi connected to an LCD screen **(Wesley and Navraj)**
 - [ ] display traffic map of city on an LCD screen **(Navraj and Brooke)**
 - [ ] display additional information such as the volume of vehicles, average travel time, congestion level of a specific roads **(Brooke)**
-- [ ] improve optimization algorithm to synchronize traffic lights **(Wesley and Navraj)**
-- [ ] non grid layouts supported **(Wesley)**
+- [ ] improve optimization algorithm to synchronize traffic lights **(Wesley)**
+- [x] non grid layouts supported **(Wesley)**
 - [ ] replace assert statements with error and warning log **(Wesley)**
 
 ### Stage 5: User Interaction

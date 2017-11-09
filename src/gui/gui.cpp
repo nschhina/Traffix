@@ -9,7 +9,7 @@ using namespace std;
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 480
-#define SCALE_FACTOR 1000
+#define SCALE_FACTOR 1
 #define EPS 1e-9
 #define ROAD_WIDTH 3
 #define INTERSECTION_RADIUS 8 // the radius of the vertices of the graph
@@ -19,7 +19,6 @@ struct color {
     unsigned char g;
     unsigned char b;
 };
-
 // colour constants for use in GUI
 const color COLOR_BLACK = {0, 0, 0};
 const color COLOR_WHITE = {255, 255, 255};
@@ -27,10 +26,8 @@ const color COLOR_RED = {255, 0, 0};
 const color COLOR_YELLOW = {255, 255, 0};
 const color COLOR_GREEN = {0, 255, 0};
 const color COLOR_BLUE = {0, 0, 255};
-
 WeightedDigraph *graph;
 QImage image(SCREEN_WIDTH, SCREEN_HEIGHT, QImage::Format::Format_ARGB32);
-
 /**
  * Constructs a
  * @param G The WeightedDigraph to be drawn to the screen
@@ -42,18 +39,15 @@ GUI::GUI(WeightedDigraph *G, QWidget *parent) : QMainWindow(parent), ui(new Ui::
     this->parent = parent;
     drawComponents();
 }
-
 /**
  * Deconstructs the GUI Object and the guis
  */
 GUI::~GUI() {
     delete ui;
 }
-
 void GUI::renderImage() {
      ui->picture->setPixmap(QPixmap::fromImage(image));
 }
-
 /**
  * Draws the RoadSegments and Intersections to the Window
  */
@@ -61,7 +55,6 @@ void GUI::drawComponents() {
     QPainter painter(&image);
     QBrush brush;
     image.fill(QColor(COLOR_WHITE.r,COLOR_WHITE.g,COLOR_WHITE.b)); // background fill colour. can be changed as well
-
     // draws Ellipses to represent each intersection
     for(pair<int, Intersection*> p: graph->getIntersections()) {
         Intersection *intersection = p.second;
@@ -70,7 +63,14 @@ void GUI::drawComponents() {
         painter.setBrush(QBrush(QColor(COLOR_BLACK.r, COLOR_BLACK.g, COLOR_BLACK.b))); // fill colour is changed here
         painter.drawEllipse(location, INTERSECTION_RADIUS, INTERSECTION_RADIUS); // change the constant to change the radius, DO NOT change this value here
     }
-
+    // list of
+    QList<QLabel*> speeds;
+    for(int i = 0; i < graph->countIntersections(); i++) {
+        speeds.insert(i, new QLabel(this));
+    }
+    char buffer[10];
+    int labelIndex = 0;
+    string s;
     // draws Lines to represent each road
     for(pair<int, RoadSegment*> p: graph->getRoadSegments()) {
         RoadSegment *road = p.second;
@@ -96,6 +96,14 @@ void GUI::drawComponents() {
         pen->setWidth(ROAD_WIDTH);
         painter.setPen(*pen);
         painter.drawLine(source, destination);
+        speeds.insert(labelIndex, new QLabel(this));
+        //speeds.value(index)->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+        sprintf(buffer,"%.1f",road->getSpeedLimit());
+        s = string(buffer);
+        speeds.value(labelIndex)->setText(QString::fromStdString(s));
+        //speeds.value(index)->setAlignment(Qt::AlignBottom | Qt::AlignRight);
+        speeds.value(labelIndex)->setGeometry(SCALE_FACTOR * (tempSource.x + tempDest.x) / 2,SCALE_FACTOR * (tempSource.y + tempDest.y) / 2,50,10);
+        labelIndex++;
     }
     painter.end();
     ui->picture->setPixmap(QPixmap::fromImage(image)); // paints components to the ui
