@@ -28,7 +28,7 @@ Group 22 - Brooke Mackenzie Dolny (bmdolny), Navraj Singh Chhina (nschhina), Wes
 - [x] working simulation
 
 ### Stage 3: Prototype Improvements
-*Target Date: Monday, October 30th*
+*Target Date: Sunday, October 5th*
 - [x] efficiency calculator **(Wesley)**
 - [x] take one-way roads into account **(Navraj)**
 - [x] develop model for speed of cars based on congestion **(Navraj)**
@@ -37,7 +37,7 @@ Group 22 - Brooke Mackenzie Dolny (bmdolny), Navraj Singh Chhina (nschhina), Wes
 - [x] basic display of flow of vehicles on roads **(Brooke)**
 
 ### Stage 4: Graphical Display and Traffic Light Synchronization
-*Target Date: Sunday, November 5th*
+*Target Date: Sunday, November 12th*
 - [ ] program should be able to run from a Raspberry Pi connected to an LCD screen **(Wesley and Navraj)**
 - [ ] display traffic map of city on an LCD screen **(Navraj and Brooke)**
 - [ ] display additional information such as the volume of vehicles, average travel time, congestion level of a specific roads **(Brooke)**
@@ -45,21 +45,18 @@ Group 22 - Brooke Mackenzie Dolny (bmdolny), Navraj Singh Chhina (nschhina), Wes
 - [x] non grid layouts supported **(Wesley)**
 - [ ] replace assert statements with error and warning log **(Wesley)**
 
-### Stage 5: User Interaction
-*Target Date: Saturday, November 11th*
+### Stage 5: User Interaction and Secondary Display
+*Target Date: Sunday, November 19th*
 - [ ] allow user to control speed of simulation **(Wesley)**
 - [ ] allow user to add cars, select destination, change road layout **(Wesley)**
 - [ ] allow user to make slight modifications to the algorithm (such as how quickly it responds to changes in the environment) **(Wesley)**
 - [ ] improve graphical interface, and add methods to modify environment variables **(Brooke)**
-
-### Stage 6: Secondary Display/Physical Model (Tentative)
-*Target Date: Friday, November 17th*
-- [ ] connect secondary display **(Navraj)**
-- [ ] implement secondary display or physical model of city **(Brooke)**
+- [ ] connect secondary display (TENTATIVE) **(Navraj)**
+- [ ] implement secondary display for city (TENTATIVE) **(Brooke)**
 - [ ] allow close up of a portion of the map **(Wesley)**
 - [ ] allow user to follow a vehicle **(Wesley and Brooke)**
 
-### Stage 7: Final Demo, Optimizing Performance
+### Stage 6: Final Demo, Optimizing Performance
 *Target Date: Thursday, November 23rd*
 - [ ] polish user interface **(Brooke)**
 - [ ] improve primary and secondary displays **(Brooke and Navraj)**
