@@ -41,8 +41,7 @@ void PretimedController::runEvents(double currentTime) {
     while (!events.empty() && events.top().first <= currentTime) {
         Intersection *n = G->getIntersection(events.top().second);
         bool prevLeft = n->leftTurnSignalOn();
-        events.pop();
-        n->cycle(currentTime);
+        n->cycle();
         if (n->leftTurnSignalOn()) events.push(make_pair(currentTime + 10.0, n->getID())); // 10 seconds for left signals
         else events.push(make_pair(currentTime + 30.0 - (10.0 * prevLeft), n->getID())); // 20 seconds if there was just a left signal, 30 otherwise
     }

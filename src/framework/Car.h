@@ -15,15 +15,10 @@ struct Intersection; // foward declaration
 struct Car {
 private:
     static int counter; // number of cars that have been created
-    static double efficiency; // the average efficiency of all cars
-    static int reached; // number of cars that have reached the destination
     int id; // each car has a unique id number
-    double startTime; // the starting time on the road's journey
-    double expectedTime; // the expected time for the car to complete its journey
     double currentSpeed; // the car's curent speed
     Point2D currentLocation; // the car's current location
     RoadSegment *currentRoad; // the road the car is currently on
-    RoadSegment *finalRoad; // the final road the car will travel on
     Point2D source; // the x y location of the source
     Point2D destination; // the x y location of the destination
     std::vector<RoadSegment*> sourceRoads; // possible roads the that lead directly out from the source
@@ -36,18 +31,14 @@ private:
     int pathIndex; // the current index on the path that the car is on
 
 public:
-    Car(Point2D &source, Point2D &destination, std::vector<RoadSegment*> &sourceRoads, std::vector<RoadSegment*> &destinationRoads, double currentTime, WeightedDigraph *G);
+    Car(Point2D &source, Point2D &destination, std::vector<RoadSegment*> &sourceRoads, std::vector<RoadSegment*> &destinationRoads, WeightedDigraph *G);
     ~Car();
-    void updateEfficiency(double endTime);
     int getID() const;
-    double getElapsedTime(double currentTime) const;
-    double getExpectedTime() const;
     double getCurrentSpeed() const;
     void setSpeed(double speed);
     RoadSegment *getCurrentRoad() const;
     bool hasNextRoad() const;
-    RoadSegment *getNextRoad();
-    RoadSegment *peekNextRoad() const;
+    RoadSegment *getNextRoad() const;
     void setRoad(RoadSegment *road);
     Point2D getCurrentLocation() const;
     void setLocation(Point2D &location);
@@ -57,6 +48,6 @@ public:
 
 RoadSegment *getRandomRoadSegment(WeightedDigraph *G);
 Point2D getRandomLocation(RoadSegment *r);
-Car *getRandomCar(WeightedDigraph *G, double currentTime);
+Car *getRandomCar(WeightedDigraph *G);
 
 #endif

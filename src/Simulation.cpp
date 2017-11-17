@@ -23,11 +23,6 @@ Simulation::Simulation(Controller *controller) {
 Simulation::~Simulation() {}
 
 /**
- * Returns the current time in the simulation.
- */
-double Simulation::getCurrentTime() { return currentTime; }
-
-/**
  * Performs the next iteration in the simulation.
  * @param timeElapsed the time elasped since the last iteration
  */
@@ -37,28 +32,19 @@ void Simulation::nextIteration(double timeElapsed) {
     WeightedDigraph *G = controller->getGraph();
     unordered_set<int> done;
     unordered_set<pair<int, int>, pair_hash<int, int>> toDelete;
-    // // PRE CHECK
-    // for (pair<int, RoadSegment*> r : G->getRoadSegments()) {
-    //     for (pair<int, Car*> c : r.second->getCars()) {
-    //         assert(c.second != nullptr);
-    //         if (c.second->hasNextRoad()) assert(c.second->peekNextRoad()->incoming.count(c.first));
-    //     }
-    // }
     for (pair<int, RoadSegment*> r : G->getRoadSegments()) {
         Point2D dest = r.second->getDestination()->getLocation();
         if (r.second->countCarsInQueue() > 0 && r.second->getLatestTime() + REACTION_TIME >= currentTime) {
             Car *c = r.second->getNextCar();
             r.second->removeNextCar(currentTime);
             done.insert(c->getID());
-            if (!c->hasNextRoad() || (r.second->getDestination()->getLightBetween(r.first, c->peekNextRoad()->getID())->getState() == GREEN
-                    && c->peekNextRoad()->getCapacity() - c->peekNextRoad()->getFlow() >= 1)) {
+            if (!c->hasNextRoad() || (r.second->getDestination()->getLightBetween(r.first, c->getNextRoad()->getID())->getState() == GREEN
+                    && c->getNextRoad()->getCapacity() - c->getNextRoad()->getFlow() >= 1)) {
                 c->setLocation(dest);
                 assert(r.second->removeCar(c) && "car not on road");
                 if (c->hasNextRoad()) {
-                    RoadSegment *rp = c->getNextRoad();
-                    assert(rp->addCar(c) && "car was already on road");
+                    assert(c->getNextRoad()->addCar(c) && "car was already on road");
                 } else {
-                    c->updateEfficiency(currentTime);
                     delete c;
                 }
             }
@@ -77,7 +63,7 @@ void Simulation::nextIteration(double timeElapsed) {
                 } else if (r.second->countCarsInQueue() > 0 && r.second->getLastCar()->getCurrentLocation().distanceTo(newLoc) <= maxDist) {
                     assert(r.second->stop(c.first));
                 } else if (dest.distanceTo(newLoc) <= maxDist) {
-                    if (!c.second->hasNextRoad() || c.second->peekNextRoad()->getCapacity() - c.second->peekNextRoad()->getFlow() >= 1)
+                    if (!c.second->hasNextRoad() || c.second->getNextRoad()->getCapacity() - c.second->getNextRoad()->getFlow() >= 1)
                         toDelete.insert(make_pair(c.first, 2));
                 }
             }
@@ -86,24 +72,15 @@ void Simulation::nextIteration(double timeElapsed) {
             Car *car = r.second->getCar(c.first);
             assert(r.second->removeCar(car) && "car not on road");
             if (c.second == 1) {
-                car->updateEfficiency(currentTime);
                 delete car;
-            } else if (car->hasNextRoad()) {
-                if (car->peekNextRoad()->getCapacity() - car->peekNextRoad()->getFlow() < 1) continue;
-                RoadSegment *rp = car->getNextRoad();
-                assert(rp->addCar(car) && "car was already on road");
-                car->setLocation(dest);
             } else {
-                car->updateEfficiency(currentTime);
-                delete car;
+                if (car->hasNextRoad()) {
+                    assert(car->getNextRoad()->addCar(car) && "car was already on road");
+                    car->setLocation(dest);
+                } else {
+                    delete car;
+                }
             }
         }
     }
-    // POST CHECK
-    // for (pair<int, RoadSegment*> r : G->getRoadSegments()) {
-    //     for (pair<int, Car*> c : r.second->getCars()) {
-    //         assert(c.second != nullptr);
-    //         if (c.second->hasNextRoad()) assert(c.second->peekNextRoad()->incoming.count(c.first));
-    //     }
-    // }
 }

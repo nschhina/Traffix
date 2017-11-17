@@ -16,7 +16,6 @@ Intersection::Intersection(double x, double y) {
     currentCycleNumber = 0;
     numberOfCycles = 0;
     leftTurn = -1;
-    timeSinceLastCycle = 0.0;
 }
 
 /**
@@ -159,7 +158,7 @@ void Intersection::connect(int from, int to, int type) {
     assert(outboundRoads.count(to) && "no outbound road exists in the intersection");
     adjacentOut[from].insert(to);
     adjacentIn[to].insert(from);
-    TrafficLight *t = new TrafficLight(inboundRoads[from], outboundRoads[to], type);
+    TrafficLight *t = new TrafficLight(type);
     lights[make_pair(from, to)] = t;
     lightFromID[t->getID()] = t;
     if (t->getType() == STRAIGHT) {
@@ -177,8 +176,8 @@ void Intersection::connect(int from, int to, int type) {
  * @param B the ID of the other traffic light
  */
 void Intersection::link(int A, int B) {
+    assert(lightFromID[A]->getType() == STRAIGHT && "light A must be of type straight");
     int AType = lightFromID[A]->getType();
-    assert(AType == STRAIGHT && "light A must be of type straight");
     int BType = lightFromID[B]->getType();
     if (BType == LEFT) {
         linksLeft[A].insert(B);
@@ -235,8 +234,7 @@ void Intersection::link(int A, int B) {
 /**
  * Cycles the traffic lights in the intersection.
  */
-void Intersection::cycle(double time) {
-    timeSinceLastCycle = time;
+void Intersection::cycle() {
     unordered_set<int> greens;
     unordered_set<int> lefts;
     for (int light : cycleToLight[(currentCycleNumber + numberOfCycles - 1) % numberOfCycles]) {
@@ -268,44 +266,9 @@ void Intersection::cycle(double time) {
 }
 
 /**
- * Returns the current cycle number in the intersection.
- */
-int Intersection::getCurrentCycle() const { return currentCycleNumber; }
-
-/**
  * Returns true if any left turn signal is on, false otherwise.
  */
 bool Intersection::leftTurnSignalOn() const { return leftTurn; }
-
-/**
- * Returns the flow of vehicles in incoming roads that are green.
- */
-int Intersection::getCurrentFlow() {
-    int flow = 0;
-    for (int t : cycleToLight[currentCycleNumber]) {
-        flow += lightFromID[t]->getFrom()->getFlow();
-    }
-    return flow;
-}
-
-/**
- * Returns the flow of vehicles in incoming roads that are red.
- */
-int Intersection::getOppositeFlow() {
-    int flow = 0;
-    for (int i = 0; i < numberOfCycles; i++) {
-        if (i == currentCycleNumber) continue;
-        for (int t : cycleToLight[currentCycleNumber]) {
-            flow += lightFromID[t]->getFrom()->getFlow();
-        }
-    }
-    return flow;
-}
-
-/**
- * Returns the time since the last cycle change.
- */
-double Intersection::getTimeSinceLastCycle() const { return timeSinceLastCycle; }
 
 /**
  * Returns the number of outbound road segments in this intersection.

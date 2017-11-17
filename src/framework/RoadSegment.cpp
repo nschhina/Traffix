@@ -1,7 +1,4 @@
 #include <assert.h>
-#include <cmath>
-#include <ctime>
-#include <random>
 #include "RoadSegment.h"
 
 using namespace std;
@@ -77,24 +74,6 @@ int RoadSegment::getFlow() const { return flow; }
  */
 int RoadSegment::getCapacity() const { return this->capacity; }
 
-/**
- * Returns the projected speed of cars on this road given based on the model -cosh(1.25 * x) + 2.
- */
-double RoadSegment::getProjectedSpeed() const {
-    double factor = -cosh(1.25 * (double) flow / (double) capacity) + 2.0;
-    assert(factor <= 1.0 + EPS && factor >= 0.1115 - EPS);
-    return factor * speedLimit;
-}
-
-/**
- * Returns a random speed of cars on this road with a mean equal to the projected speed and standard deviation of 20% of the projected speed.
- */
-double RoadSegment::getRandomSpeed() const {
-    default_random_engine generator(time(0));
-    double proj = getProjectedSpeed();
-    normal_distribution<double> distribution(proj, proj * 0.2);
-    return max(MIN_SPEED, distribution(generator));
-}
 
 /**
  * Adds the specified amount of flow to the road segment. The value added must be non-negative and the flow cannot exceed the capacity.
@@ -122,14 +101,10 @@ void RoadSegment::subtractFlow(int value) {
  * @param c the pointer to the car
  */
 bool RoadSegment::addCar(Car *c) {
-    assert(incoming.count(c->getID()) > 0 && "car is not scheduled to be on this road");
     if (cars.count(c->getID()) > 0 || flow + 1 > capacity) return false;
     addFlow(1);
     cars[c->getID()] = c;
-    incoming.erase(c->getID());
     c->setRoad(this);
-    c->setSpeed(getRandomSpeed());
-    if (c->hasNextRoad()) c->peekNextRoad()->addIncoming(c);
     return true;
 }
 
@@ -139,8 +114,6 @@ bool RoadSegment::addCar(Car *c) {
  * @param c the pointer to the car
  */
 bool RoadSegment::removeCar(Car *c) {
-    assert(inQueue.count(c->getID()) == 0);
-    assert(incoming.count(c->getID()) == 0);
     if (cars.count(c->getID()) == 0 || flow - 1 < 0) return false;
     subtractFlow(1);
     cars.erase(c->getID());
@@ -211,14 +184,6 @@ int RoadSegment::countCarsInQueue() const { return inQueue.size(); };
 bool RoadSegment::isStopped(int id) const {
     assert(cars.count(id) > 0 && "car is not in road");
     return inQueue.count(id) > 0;
-}
-
-/**
- * Schedules the car to go on this road next.
- */
-void RoadSegment::addIncoming(Car *c) {
-    assert(incoming.count(c->getID()) == 0 && "car is already scheduled to go on this road");
-    incoming.insert(c->getID());
 }
 
 /**

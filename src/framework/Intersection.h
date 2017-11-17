@@ -32,7 +32,6 @@ private:
     int currentCycleNumber; // current cycle number of the intersection
     std::vector<std::unordered_set<int>> cycleToLight; // the set of lights associated with the cycle number
     std::unordered_map<int, int> cycleNumber; // cycle number of a light
-    double timeSinceLastCycle;
 
     // void dfs(int light, int cur);
 
@@ -46,12 +45,8 @@ public:
     void connect(int from, int to, int type);
     void link(int A, int B);
     // void assign();
-    void cycle(double time);
-    int getCurrentCycle() const;
+    void cycle();
     bool leftTurnSignalOn() const;
-    int getCurrentFlow();
-    int getOppositeFlow();
-    double getTimeSinceLastCycle() const;
     int outdegree() const;
     int indegree() const;
     const std::unordered_map<int, RoadSegment*> &getInboundRoads() const;

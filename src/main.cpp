@@ -1,13 +1,12 @@
 #include <string>
 #include <cstdio>
 #include <ctime>
-#include "GUIDriver.h"
+#include "ConsoleDriver.h"
 
 using namespace std;
 
-int main(int argc, char *argv[]) {
+int main() {
     srand(time(NULL));
-    GUIDriver *gd = new GUIDriver(argc, argv, 20, ":/data/fixedIntxnRoadsRandCarDemo.txt", 1);
-    gd->run();
-    return 0;
+    ConsoleDriver *cd = new ConsoleDriver(1, "data/fixedIntxnRoadsRandCarDemo.txt");
+    cd->run();
 }

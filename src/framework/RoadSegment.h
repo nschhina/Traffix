@@ -8,8 +8,6 @@
 #include "Intersection.h"
 #include "Car.h"
 
-#define MIN_SPEED 0.001
-
 struct RoadSegment {
 private:
     static const double EPS;
@@ -25,7 +23,6 @@ private:
     std::queue<int> waiting; // the queue of cars waiting on this intersection
     double latestTime; // the latest time a car left the waiting queue
     std::unordered_set<int> inQueue; // the IDs of the cars in the queue
-    std::unordered_set<int> incoming; // the IDs of the next cars scheduled to be on this road
 
     void addFlow(int value);
     void subtractFlow(int value);
@@ -41,8 +38,6 @@ public:
     double getExpectedTime() const;
     int getFlow() const;
     int getCapacity() const;
-    double getProjectedSpeed() const;
-    double getRandomSpeed() const;
     bool addCar(Car *c);
     bool removeCar(Car *c);
     bool carOnRoad(Car *c);
@@ -52,7 +47,6 @@ public:
     Car *getLastCar();
     int countCarsInQueue() const;
     bool isStopped(int id) const;
-    void addIncoming(Car *c);
     double getLatestTime() const;
     Car *getCar(int id);
     const std::unordered_map<int, Car*> &getCars() const;

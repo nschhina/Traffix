@@ -4,15 +4,11 @@ int TrafficLight::counter = 0; // counter starts at 0
 
 /**
  * Initializes a traffic light with a default state of RED.
- * @param from the RoadSegment leading into the intersection this traffic light controls
- * @param to the RoadSegment leading out from the intersection this traffic light controls
  * @param type the type of turn this traffic light controls
  */
-TrafficLight::TrafficLight(RoadSegment *from, RoadSegment *to, int type) {
+TrafficLight::TrafficLight(int type) {
     this->id = counter++; // assigns an id and increments the counter
     this->state = type == RIGHT ? GREEN : RED; // default state
-    this->from = from;
-    this->to = to;
     this->type = type;
 }
 
@@ -20,16 +16,6 @@ TrafficLight::TrafficLight(RoadSegment *from, RoadSegment *to, int type) {
  * Deconstructs the traffic light.
  */
 TrafficLight::~TrafficLight() {}
-
-/**
- * Returns the road leading into the intersection this traffic light controls
- */
-RoadSegment *TrafficLight::getFrom() const {  return from; }
-
-/**
- * Returns the road leading out from the intersection this traffic light controls
- */
-RoadSegment *TrafficLight::getTo() const {  return to; }
 
 /**
  * Returns the unique ID of this traffic light.

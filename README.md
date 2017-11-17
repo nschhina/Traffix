@@ -24,39 +24,42 @@ Group 22 - Brooke Mackenzie Dolny (bmdolny), Navraj Singh Chhina (nschhina), Wes
 - [x] random car spawner and random destinations **(Wesley)**
 - [x] implement pre-timed traffic light system **(Wesley)**
 - [x] implement grid layout of city **(Brooke)**
-- [x] display traffic map of city in console **(Wesley and Navraj)**
+- [x] display traffic map of city in console, may skip and implement graphical display (Stage 3/4) instead **(Wesley and Navraj)**
 - [x] working simulation
 
 ### Stage 3: Prototype Improvements
-*Target Date: Sunday, October 5th*
-- [x] efficiency calculator **(Wesley)**
-- [x] take one-way roads into account **(Navraj)**
-- [x] develop model for speed of cars based on congestion **(Navraj)**
-- [x] small random factor of speed of cars **(Wesley)**
-- [x] implement first iteration of optimization algorithm **(Wesley)**
-- [x] basic display of flow of vehicles on roads **(Brooke)**
+*Target Date: Sunday, October 29th*
+- [ ] efficiency calculator **(Navraj)**
+- [ ] take one-way roads into account **(Navraj)**
+- [ ] develop model for speed of cars based on congestion **(Navraj)**
+- [ ] small random factor of speed of cars **(Wesley)**
+- [ ] implement first iteration of optimization algorithm **(Wesley)**
+- [ ] basic display of flow of vehicles on roads **(Brooke)**
 
 ### Stage 4: Graphical Display and Traffic Light Synchronization
-*Target Date: Sunday, November 12th*
+*Target Date: Thursday, November 2nd*
 - [ ] program should be able to run from a Raspberry Pi connected to an LCD screen **(Wesley and Navraj)**
 - [ ] display traffic map of city on an LCD screen **(Navraj and Brooke)**
 - [ ] display additional information such as the volume of vehicles, average travel time, congestion level of a specific roads **(Brooke)**
-- [ ] improve optimization algorithm to synchronize traffic lights **(Wesley)**
-- [x] non grid layouts supported **(Wesley)**
+- [ ] improve optimization algorithm to synchronize traffic lights **(Wesley and Navraj)**
+- [ ] non grid layouts supported **(Wesley)**
 - [ ] replace assert statements with error and warning log **(Wesley)**
 
-### Stage 5: User Interaction and Secondary Display
-*Target Date: Sunday, November 19th*
+### Stage 5: User Interaction
+*Target Date: Thursday, November 9th*
 - [ ] allow user to control speed of simulation **(Wesley)**
 - [ ] allow user to add cars, select destination, change road layout **(Wesley)**
 - [ ] allow user to make slight modifications to the algorithm (such as how quickly it responds to changes in the environment) **(Wesley)**
 - [ ] improve graphical interface, and add methods to modify environment variables **(Brooke)**
-- [ ] connect secondary display (TENTATIVE) **(Navraj)**
-- [ ] implement secondary display for city (TENTATIVE) **(Brooke)**
+
+### Stage 6: Secondary Display/Physical Model (Tentative)
+*Target Date: Thursday, November 16th*
+- [ ] connect secondary display **(Navraj)**
+- [ ] implement secondary display or physical model of city **(Brooke)**
 - [ ] allow close up of a portion of the map **(Wesley)**
 - [ ] allow user to follow a vehicle **(Wesley and Brooke)**
 
-### Stage 6: Final Demo, Optimizing Performance
+### Stage 7: Final Demo, Optimizing Performance
 *Target Date: Thursday, November 23rd*
 - [ ] polish user interface **(Brooke)**
 - [ ] improve primary and secondary displays **(Brooke and Navraj)**
@@ -66,7 +69,6 @@ Group 22 - Brooke Mackenzie Dolny (bmdolny), Navraj Singh Chhina (nschhina), Wes
 ### Stretch Tasks
 *Only if there is time*
 - [ ] pedestrian traffic
-- [ ] U-Turns
 - [ ] non-controlled intersections (no traffic lights)
 - [ ] accidents, road closures, weather
 - [ ] drivers not following rules

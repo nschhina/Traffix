@@ -5,7 +5,6 @@
 #include "Controller.h"
 
 struct PretimedController : public Controller {
-public:
     PretimedController(WeightedDigraph *G);
     ~PretimedController();
     void addEvent(double time, int id);
