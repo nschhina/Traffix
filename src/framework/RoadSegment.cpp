@@ -1,9 +1,11 @@
 #include <assert.h>
+#include <cmath>
+#include <ctime>
+#include <random>
 #include "RoadSegment.h"
 
 using namespace std;
 
-const double RoadSegment::EPS = 1e-9;
 int RoadSegment::counter = 0; // counter starts at 0
 
 /**
@@ -24,6 +26,7 @@ RoadSegment::RoadSegment(Intersection *source, Intersection *destination, double
     this->speedLimit = speedLimit;
     this->flow = 0;
     this->capacity = capacity;
+    latestTime = 0.0;
 }
 
 /**
@@ -62,7 +65,7 @@ double RoadSegment::getSpeedLimit() const { return speedLimit; }
 /**
  * Returns the expected amount of time it will take to travel on this road segment.
  */
-double RoadSegment::getExpectedTime() const { return this->length / this->speedLimit; }
+double RoadSegment::getExpectedTime() const { return length / speedLimit; }
 
 /**
  * Returns the current flow of the road segment.
@@ -72,8 +75,26 @@ int RoadSegment::getFlow() const { return flow; }
 /**
  * Returns the vehicle capacity of the road segment.
  */
-int RoadSegment::getCapacity() const { return this->capacity; }
+int RoadSegment::getCapacity() const { return capacity; }
 
+/**
+ * Returns the projected speed of cars on this road given based on the model speedlimit * -cosh(1.25 * (flow / capacity)) + 2.
+ */
+double RoadSegment::getProjectedSpeed() const {
+    double factor = -cosh(1.25 * (double) flow / (double) capacity) + 2.0;
+    assert(factor <= 1.0 + EPS && factor >= 0.1115 - EPS);
+    return factor * speedLimit;
+}
+
+/**
+ * Returns a random speed of cars on this road with a mean equal to the projected speed and standard deviation of 20% of the projected speed.
+ */
+double RoadSegment::getRandomSpeed() const {
+    default_random_engine generator(time(0));
+    double proj = getProjectedSpeed();
+    normal_distribution<double> distribution(proj, proj * 0.2);
+    return min(max(MIN_SPEED, distribution(generator)), speedLimit);
+}
 
 /**
  * Adds the specified amount of flow to the road segment. The value added must be non-negative and the flow cannot exceed the capacity.
@@ -101,10 +122,14 @@ void RoadSegment::subtractFlow(int value) {
  * @param c the pointer to the car
  */
 bool RoadSegment::addCar(Car *c) {
+    assert(incoming.count(c->getID()) > 0 && "car is not scheduled to be on this road");
     if (cars.count(c->getID()) > 0 || flow + 1 > capacity) return false;
     addFlow(1);
     cars[c->getID()] = c;
+    incoming.erase(c->getID());
     c->setRoad(this);
+    c->setSpeed(getRandomSpeed());
+    if (c->hasNextRoad()) c->peekNextRoad()->addIncoming(c);
     return true;
 }
 
@@ -114,6 +139,8 @@ bool RoadSegment::addCar(Car *c) {
  * @param c the pointer to the car
  */
 bool RoadSegment::removeCar(Car *c) {
+    assert(inQueue.count(c->getID()) == 0);
+    assert(incoming.count(c->getID()) == 0);
     if (cars.count(c->getID()) == 0 || flow - 1 < 0) return false;
     subtractFlow(1);
     cars.erase(c->getID());
@@ -145,7 +172,7 @@ bool RoadSegment::stop(int id) {
 /**
  * Returns the next car in the waiting queue.
  */
-Car *RoadSegment::getNextCar() {
+Car *RoadSegment::getNextCarFromQueue() {
     assert(inQueue.size() > 0 && "there are no cars in the waiting queue");
     Car *next = cars[waiting.front()];
     return next;
@@ -155,7 +182,7 @@ Car *RoadSegment::getNextCar() {
  * Removes the next car in the waiting queue.
  * @param currentTime the current time in the simulation
  */
-void RoadSegment::removeNextCar(double currentTime) {
+void RoadSegment::removeNextCarFromQueue(double currentTime) {
     assert(inQueue.size() > 0 && "there are no cars in the waiting queue");
     Car *next = cars[waiting.front()];
     waiting.pop();
@@ -166,7 +193,7 @@ void RoadSegment::removeNextCar(double currentTime) {
 /**
  * Returns the last car in the waiting queue.
  */
-Car *RoadSegment::getLastCar() {
+Car *RoadSegment::getLastCarInQueue() {
     assert(inQueue.size() > 0 && "there are no cars in the waiting queue");
     Car *last = cars[waiting.back()];
     return last;
@@ -184,6 +211,14 @@ int RoadSegment::countCarsInQueue() const { return inQueue.size(); };
 bool RoadSegment::isStopped(int id) const {
     assert(cars.count(id) > 0 && "car is not in road");
     return inQueue.count(id) > 0;
+}
+
+/**
+ * Schedules the car to go on this road next.
+ */
+void RoadSegment::addIncoming(Car *c) {
+    assert(incoming.count(c->getID()) == 0 && "car is already scheduled to go on this road");
+    incoming.insert(c->getID());
 }
 
 /**
@@ -206,6 +241,15 @@ Car *RoadSegment::getCar(int id) {
 const unordered_map<int, Car*> &RoadSegment::getCars() const { return cars; }
 
 /**
+ * Returns the direction of this road as an angle (between -pi and pi).
+ */
+double RoadSegment::getDirection() const {
+    Point2D sourceLoc = source->getLocation();
+    Point2D destLoc = destination->getLocation();
+    return sourceLoc.angleTo(destLoc);
+}
+
+/**
  * Compares this RoadSegment to that RoadSegment r by comparing their ids.
  *
  * @param  r the other road segment
@@ -214,69 +258,33 @@ const unordered_map<int, Car*> &RoadSegment::getCars() const { return cars; }
 bool RoadSegment::operator == (const RoadSegment &r) const { return id == r.id; }
 
 /**
- * Compares this RoadSegment to RoadSegment r by comparing their ids.
- *
- * @param  r the other road segment
- * @return true if and only if this road segment does not equals the other, false otherwise
+ * Compares RoadSegment r to RoadSegment s by comparing their directional angle (between -pi and pi).
+ * Less than comparator.
  */
-bool RoadSegment::operator != (const RoadSegment &r) const { return id != r.id; }
+bool RoadSegment::RoadSegmentPtrPolarOrderCmpLt(const RoadSegment *r, const RoadSegment *s) {
+    return s->getDirection() - r->getDirection() < EPS;
+}
 
 /**
- * Compares two road segments by their length. Less than comparator.
+ * Compares RoadSegment r to RoadSegment s by comparing their directional angle (between -pi and pi).
+ * Less than or equal to comparator.
  */
-bool RoadSegment::lengthOrderLt(const RoadSegment &r, const RoadSegment &s) { return s.length - r.length > EPS; }
+bool RoadSegment::RoadSegmentPtrPolarOrderCmpLe(const RoadSegment *r, const RoadSegment *s) {
+    return s->getDirection() - r->getDirection() < -EPS;
+}
 
 /**
- * Compares two road segments by their length. Less than or equal to comparator.
+ * Compares RoadSegment r to RoadSegment s by comparing their directional angle (between -pi and pi).
+ * Grater than comparator.
  */
-bool RoadSegment::lengthOrderLe(const RoadSegment &r, const RoadSegment &s) { return s.length - r.length > -EPS; }
+bool RoadSegment::RoadSegmentPtrPolarOrderCmpGt(const RoadSegment *r, const RoadSegment *s) {
+    return r->getDirection() - s->getDirection() < EPS;
+}
 
 /**
- * Compares two road segments by their length. Greater than comparator.
+ * Compares RoadSegment r to RoadSegment s by comparing their directional angle (between -pi and pi).
+ * Grater than comparator.
  */
-bool RoadSegment::lengthOrderGt(const RoadSegment &r, const RoadSegment &s) { return r.length - s.length > EPS; }
-
-/**
- * Compares two road segments by their length. Greater than or equal to comparator.
- */
-bool RoadSegment::lengthOrderGe(const RoadSegment &r, const RoadSegment &s) { return r.length - s.length > -EPS; }
-
-/**
- * Compares two road segments by their speed limit. Less than comparator.
- */
-bool RoadSegment::speedLimitOrderLt(const RoadSegment &r, const RoadSegment &s) { return s.speedLimit - r.speedLimit > EPS; }
-
-/**
- * Compares two road segments by their speed limit. Less than or equal to comparator.
- */
-bool RoadSegment::speedLimitOrderLe(const RoadSegment &r, const RoadSegment &s) { return s.speedLimit - r.speedLimit > -EPS; }
-
-/**
- * Compares two road segments by their speed limit. Greater than comparator.
- */
-bool RoadSegment::speedLimitOrderGt(const RoadSegment &r, const RoadSegment &s) { return r.speedLimit - s.speedLimit > EPS; }
-
-/**
- * Compares two road segments by their speed limit. Greater than or equal to comparator.
- */
-bool RoadSegment::speedLimitOrderGe(const RoadSegment &r, const RoadSegment &s) { return r.speedLimit - s.speedLimit > -EPS; }
-
-/**
- * Compares two road segments by their expected travel time. Less than comparator.
- */
-bool RoadSegment::expectedTimeOrderLt(const RoadSegment &r, const RoadSegment &s) { return s.getExpectedTime() - r.getExpectedTime() > EPS; }
-
-/**
- * Compares two road segments by their expected travel time. Less than or equal to comparator.
- */
-bool RoadSegment::expectedTimeOrderLe(const RoadSegment &r, const RoadSegment &s) { return s.getExpectedTime() - r.getExpectedTime() > -EPS; }
-
-/**
- * Compares two road segments by their expected travel time. Greater than comparator.
- */
-bool RoadSegment::expectedTimeOrderGt(const RoadSegment &r, const RoadSegment &s) { return r.getExpectedTime() - s.getExpectedTime() > EPS; }
-
-/**
- * Compares two road segments by their expected travel time. Greater than or equal to comparator.
- */
-bool RoadSegment::expectedTimeOrderGe(const RoadSegment &r, const RoadSegment &s) { return r.getExpectedTime() - s.getExpectedTime() > -EPS; }
+bool RoadSegment::RoadSegmentPtrPolarOrderCmpGe(const RoadSegment *r, const RoadSegment *s) {
+    return r->getDirection() - s->getDirection() < -EPS;
+}

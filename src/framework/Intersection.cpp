@@ -1,5 +1,9 @@
 #include <assert.h>
+#include <algorithm>
 #include "Intersection.h"
+
+#define PI 3.14159265358979323846
+#define EPS 1e-9
 
 using namespace std;
 
@@ -15,7 +19,8 @@ Intersection::Intersection(double x, double y) {
     id = Intersection::counter++; // assigns an id and increments the counter
     currentCycleNumber = 0;
     numberOfCycles = 0;
-    leftTurn = -1;
+    leftTurn = false;
+    timeOfLastCycle = 0.0;
 }
 
 /**
@@ -24,10 +29,11 @@ Intersection::Intersection(double x, double y) {
  */
 Intersection::Intersection(Point2D &location) {
     this->location = Point2D(location.x, location.y);
-    this->id = counter++; // assigns an id and increments the counter
+    id = counter++; // assigns an id and increments the counter
     currentCycleNumber = 0;
     numberOfCycles = 0;
-    leftTurn = -1;
+    leftTurn = false;
+    timeOfLastCycle = 0.0;
 }
 
 /**
@@ -151,14 +157,14 @@ bool Intersection::remove(RoadSegment *r) {
  * Connects two roads with a traffic light with a specified type
  * @param from the ID of the source road segment
  * @param to the ID of the destination road segment
- * @param type the type of turn the traffic light controls (0 for left, 1 for straight, 2 for right)
+ * @param type the type of turn the traffic light controls (0 for left, 1 for straight, 2 for right, 3 for u turn)
  */
 void Intersection::connect(int from, int to, int type) {
     assert(inboundRoads.count(from) && "no inbound road exists in the intersection");
     assert(outboundRoads.count(to) && "no outbound road exists in the intersection");
     adjacentOut[from].insert(to);
     adjacentIn[to].insert(from);
-    TrafficLight *t = new TrafficLight(type);
+    TrafficLight *t = new TrafficLight(inboundRoads[from], outboundRoads[to], type);
     lights[make_pair(from, to)] = t;
     lightFromID[t->getID()] = t;
     if (t->getType() == STRAIGHT) {
@@ -176,10 +182,10 @@ void Intersection::connect(int from, int to, int type) {
  * @param B the ID of the other traffic light
  */
 void Intersection::link(int A, int B) {
-    assert(lightFromID[A]->getType() == STRAIGHT && "light A must be of type straight");
     int AType = lightFromID[A]->getType();
+    assert(AType == STRAIGHT && "light A must be of type straight");
     int BType = lightFromID[B]->getType();
-    if (BType == LEFT) {
+    if (BType == LEFT || BType == UTURN) { // u turn lights will be treated as left turn lights
         linksLeft[A].insert(B);
         linksStraight[B].insert(A);
     } else if (BType == STRAIGHT) {
@@ -187,19 +193,90 @@ void Intersection::link(int A, int B) {
         linksStraight[B].insert(A);
         int minCycle = min(cycleNumber[A], cycleNumber[B]);
         int maxCycle = max(cycleNumber[A], cycleNumber[B]);
+        assert(minCycle != maxCycle && "lights are alread linked");
         cycleNumber[A] = cycleNumber[B] = minCycle;
+        unordered_set<int> toRemove;
         for (int light : cycleToLight[maxCycle]) {
             cycleToLight[minCycle].insert(light);
             cycleNumber[light] = minCycle;
+            toRemove.insert(light);
+        }
+        for (int light : toRemove) {
+            cycleToLight[maxCycle].erase(light);
         }
         for (int light : cycleToLight.back()) {
             cycleToLight[maxCycle].insert(light);
             cycleNumber[light] = maxCycle;
         }
         cycleToLight.pop_back();
+        numberOfCycles--;
+        assert(numberOfCycles == cycleToLight.size());
+        assert(numberOfCycles > 0);
     } else { // BTYPE == RIGHT
         linksRight[A].insert(B);
         linksStraight[B].insert(A);
+    }
+}
+
+/**
+ * Iterates through all the road segements connected to this intersection and connects and links corresponding traffic lights;
+ */
+void Intersection::autoConnectAndLink() {
+    unordered_map<int, int> outTypes;
+    vector<RoadSegment*> outSorted;
+    vector<pair<int, int>> straightLights ;
+    for (pair<int, RoadSegment*> out : outboundRoads) {
+        outSorted.push_back(out.second);
+    }
+    sort(outSorted.begin(), outSorted.end(), RoadSegment::RoadSegmentPtrPolarOrderCmpGt);
+    for (pair<int, RoadSegment*> in : inboundRoads) {
+        outTypes.clear();
+        Point2D inSource = in.second->getSource()->getLocation();
+        Point2D inDest = in.second->getDestination()->getLocation();
+        double inAngle = in.second->getDirection();
+        double outAngle;
+        double diffAngle;
+        int closestDiffAngleID = -1;
+        int straightLightID;
+        double closestDiffAngle = 2 * PI;
+        for (RoadSegment *out : outSorted) { // uses the sorted vector so that right turns are more likely to be marked as such
+            outAngle = out->getDirection(); 
+            diffAngle = outAngle - inAngle;
+            if (diffAngle < -PI) diffAngle += 2 * PI;
+            if (diffAngle > PI) diffAngle -= 2 * PI;
+            if (abs(diffAngle) > PI - EPS) outTypes[out->getID()] = UTURN;
+            else outTypes[out->getID()] = diffAngle > 0 ? RIGHT : LEFT;
+            if (abs(diffAngle) < abs(closestDiffAngle) - EPS) {
+                if (closestDiffAngleID != -1) outTypes[out->getID()] = abs(diffAngle) > PI - EPS ? UTURN : (closestDiffAngle > 0 ? RIGHT : LEFT);
+                outTypes[out->getID()] = STRAIGHT;
+                closestDiffAngle = diffAngle;
+                closestDiffAngleID = out->getID();
+            }
+        }
+        assert(closestDiffAngleID != -1);
+        // connecting lights
+        for (pair<int, int> p : outTypes) {
+            connect(in.first, p.first, p.second);
+            if (p.second == STRAIGHT) {
+                straightLightID = lights[make_pair(in.first, p.first)]->getID();
+                straightLights.push_back(make_pair(in.first, p.first));
+            }
+        }
+        // linking straight lights with non straight lights
+        for (pair<int, int> p : outTypes) {
+            if (p.second != STRAIGHT) link(straightLightID, lights[make_pair(in.first, p.first)]->getID());
+        }
+    }
+    // linkning straight lights with each other
+    for (int i = 0; i < straightLights.size(); i++) {
+        pair<int, int> a = straightLights[i];
+        for (int j = i + 1; j < straightLights.size(); j++) {
+            pair<int, int> b = straightLights[j];
+            if (inboundRoads[a.first]->getSource()->getID() == outboundRoads[b.second]->getDestination()->getID()
+                    && outboundRoads[a.second]->getDestination()->getID() == inboundRoads[b.first]->getSource()->getID()) {
+                link(lights[a]->getID(), lights[b]->getID());
+            }
+        }
     }
 }
 
@@ -234,7 +311,8 @@ void Intersection::link(int A, int B) {
 /**
  * Cycles the traffic lights in the intersection.
  */
-void Intersection::cycle() {
+void Intersection::cycle(double time) {
+    timeOfLastCycle = time;
     unordered_set<int> greens;
     unordered_set<int> lefts;
     for (int light : cycleToLight[(currentCycleNumber + numberOfCycles - 1) % numberOfCycles]) {
@@ -251,6 +329,7 @@ void Intersection::cycle() {
             }
         }
     }
+    assert(greens.size() > 0);
     if (lefts.size() == 0) {
         leftTurn = false;
         for (int light : greens) {
@@ -266,9 +345,44 @@ void Intersection::cycle() {
 }
 
 /**
+ * Returns the current cycle number in the intersection.
+ */
+int Intersection::getCurrentCycle() const { return currentCycleNumber; }
+
+/**
  * Returns true if any left turn signal is on, false otherwise.
  */
 bool Intersection::leftTurnSignalOn() const { return leftTurn; }
+
+/**
+ * Returns the flow of vehicles in incoming roads that are green.
+ */
+int Intersection::getCurrentFlow() {
+    int flow = 0;
+    for (int t : cycleToLight[currentCycleNumber]) {
+        flow += lightFromID[t]->getFrom()->getFlow();
+    }
+    return flow;
+}
+
+/**
+ * Returns the flow of vehicles in incoming roads that are red.
+ */
+int Intersection::getOppositeFlow() {
+    int flow = 0;
+    for (int i = 0; i < numberOfCycles; i++) {
+        if (i == currentCycleNumber) continue;
+        for (int t : cycleToLight[currentCycleNumber]) {
+            flow += lightFromID[t]->getFrom()->getFlow();
+        }
+    }
+    return flow;
+}
+
+/**
+ * Returns the time since the last cycle change.
+ */
+double Intersection::getTimeOfLastCycle() const { return timeOfLastCycle; }
 
 /**
  * Returns the number of outbound road segments in this intersection.
@@ -315,7 +429,7 @@ bool Intersection::isConnected(int from, int to) {
 TrafficLight *Intersection::getLightBetween(int from, int to) {
     assert(inboundRoads.count(from) && outboundRoads.count(to) && "one of the roads is not in the intersection");
     pair<int, int> p = make_pair(from, to);
-    assert(lights.count(p) && "the is no light between the two roads");
+    assert(lights.count(p) && "there is no light between the two roads");
     return lights[p];
 }
 

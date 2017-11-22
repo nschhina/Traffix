@@ -31,7 +31,7 @@ DijkstraDirectedSP::DijkstraDirectedSP(WeightedDigraph *G, vector<int> &sourceID
         for (RoadSegment *r = roadTo[shortestPathDestinationID]; r != nullptr; r = roadTo[r->getSource()->getID()]) {
             stk.push(r);
         }
-        assert(!stk.empty() && "no path for car to reach destination form sources");
+        assert(!stk.empty() && "no path for car to reach destination from sources");
         shortestPathSourceID = stk.top()->getSource()->getID();
         while (!stk.empty()) {
             shortestPath.push_back(stk.top());

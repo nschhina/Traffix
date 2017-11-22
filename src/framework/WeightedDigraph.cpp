@@ -147,3 +147,8 @@ int WeightedDigraph::getCompressedIndex(int id) {
     assert(compressedIndex.count(id) > 0 && "there is no road segment with the given id");
     return compressedIndex[id];
 }
+
+/**
+ * Returns the efficiency of the city.
+ */
+double WeightedDigraph::getEfficiency() { return Car::getEfficiency(); }

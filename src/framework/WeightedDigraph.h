@@ -33,6 +33,7 @@ public:
     int getRoadSegmentID(int index);
     const std::unordered_map<int, int> &getCompressedIndices() const;
     int getCompressedIndex(int id);
+    double getEfficiency();
 };
 
 #endif

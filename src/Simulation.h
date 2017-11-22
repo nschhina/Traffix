@@ -4,7 +4,7 @@
 #include "controller/Controller.h"
 #include "framework/Framework.h"
 
-#define REACTION_TIME 0.3
+#define REACTION_TIME 0.1
 
 /**
  * Simulates the traffic in the city
@@ -17,6 +17,7 @@ private:
 public:
     Simulation(Controller *controller);
     ~Simulation();
+    double getCurrentTime();
     void nextIteration(double timeElapsed);
 };
 

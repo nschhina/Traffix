@@ -7,6 +7,7 @@
 #include "framework/Framework.h"
 
 #define CONSOLE_GRID_SIZE 50
+#define SCALE_FACTOR 0.1
 
 /**
  * The driver behind the console display.
@@ -18,13 +19,13 @@ private:
     WeightedDigraph *G; // the city represented as a weighted directed graph
     double iterationsPerSecond; // the number of iterations per second the simulation should execute
     double iterationLength; // the length of one iteration
-    int carsPerIteration; // the number of cars added per iteration
+    int carsPerSecond; // the number of cars added per iteration
 
     void clearConsole();
     void printToConsole();
 
 public:
-    ConsoleDriver(double iterationsPerSecond, std::string file);
+    ConsoleDriver(double iterationsPerSecond, std::string file, int controllerType);
     ~ConsoleDriver();
     void run();
 };

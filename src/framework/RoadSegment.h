@@ -8,9 +8,11 @@
 #include "Intersection.h"
 #include "Car.h"
 
+#define MIN_SPEED 0.001
+#define EPS 1e-9
+
 struct RoadSegment {
 private:
-    static const double EPS;
     static int counter; // number of road segments that have been created
     int id; // each road segment has a unique id number
     Intersection *source; // the source intersection
@@ -23,6 +25,7 @@ private:
     std::queue<int> waiting; // the queue of cars waiting on this intersection
     double latestTime; // the latest time a car left the waiting queue
     std::unordered_set<int> inQueue; // the IDs of the cars in the queue
+    std::unordered_set<int> incoming; // the IDs of the next cars scheduled to be on this road
 
     void addFlow(int value);
     void subtractFlow(int value);
@@ -38,32 +41,28 @@ public:
     double getExpectedTime() const;
     int getFlow() const;
     int getCapacity() const;
+    double getProjectedSpeed() const;
+    double getRandomSpeed() const;
     bool addCar(Car *c);
     bool removeCar(Car *c);
     bool carOnRoad(Car *c);
     bool stop(int id);
-    Car *getNextCar();
-    void removeNextCar(double currentTime);
-    Car *getLastCar();
+    Car *getNextCarFromQueue();
+    void removeNextCarFromQueue(double currentTime);
+    Car *getLastCarInQueue();
     int countCarsInQueue() const;
     bool isStopped(int id) const;
+    void addIncoming(Car *c);
     double getLatestTime() const;
     Car *getCar(int id);
     const std::unordered_map<int, Car*> &getCars() const;
+    double getDirection() const;
     bool operator == (const RoadSegment &r) const;
     bool operator != (const RoadSegment &r) const;
-    static bool lengthOrderLt(const RoadSegment &r, const RoadSegment &s);
-    static bool lengthOrderLe(const RoadSegment &r, const RoadSegment &s);
-    static bool lengthOrderGt(const RoadSegment &r, const RoadSegment &s);
-    static bool lengthOrderGe(const RoadSegment &r, const RoadSegment &s);
-    static bool speedLimitOrderLt(const RoadSegment &r, const RoadSegment &s);
-    static bool speedLimitOrderLe(const RoadSegment &r, const RoadSegment &s);
-    static bool speedLimitOrderGt(const RoadSegment &r, const RoadSegment &s);
-    static bool speedLimitOrderGe(const RoadSegment &r, const RoadSegment &s);
-    static bool expectedTimeOrderLt(const RoadSegment &r, const RoadSegment &s);
-    static bool expectedTimeOrderLe(const RoadSegment &r, const RoadSegment &s);
-    static bool expectedTimeOrderGt(const RoadSegment &r, const RoadSegment &s);
-    static bool expectedTimeOrderGe(const RoadSegment &r, const RoadSegment &s);
+    static bool RoadSegmentPtrPolarOrderCmpLt(const RoadSegment *r, const RoadSegment *s);
+    static bool RoadSegmentPtrPolarOrderCmpLe(const RoadSegment *r, const RoadSegment *s);
+    static bool RoadSegmentPtrPolarOrderCmpGt(const RoadSegment *r, const RoadSegment *s);
+    static bool RoadSegmentPtrPolarOrderCmpGe(const RoadSegment *r, const RoadSegment *s);
 };
 
 #endif

@@ -4,6 +4,7 @@
 #include <assert.h>
 #include "ConsoleDriver.h"
 #include "controller/PretimedController.h"
+#include "controller/BasicController.h"
 
 using namespace std;
 
@@ -11,41 +12,45 @@ using namespace std;
  * Initializes a new ConsoleDriver.
  * @param iterationsPerSecond the number of iterations to be executed in the simulator per second
  * @param file the file to load the city
+ * @param controllerType 0 if PretimedController, 1 for BasicController
  */
-ConsoleDriver::ConsoleDriver(double iterationsPerSecond, string file) {
+ConsoleDriver::ConsoleDriver(double iterationsPerSecond, string file, int controllerType) {
     assert(iterationsPerSecond > 0.0 && "iterationsPerSecond must be a positive value");
     this->iterationsPerSecond = iterationsPerSecond;
     iterationLength = 1.0 / iterationsPerSecond;
     freopen(file.c_str(), "r", stdin);
     G = new WeightedDigraph();
-    controller = new PretimedController(G);
+    if (controllerType == 0) controller = new PretimedController(G);
+    else if (controllerType == 1) controller = new BasicController(G);
     sim = new Simulation(controller);
-    int cntIntersections, cntRoadSegments, cntConnections, cntCars;
-    scanf("%d %d %d %d %d", &cntIntersections, &cntRoadSegments, &cntConnections, &cntCars, &carsPerIteration);
+    int cntIntersections;
+    int cntRoadSegments;
+    int cntCars;
+    scanf("%d %d %d %d", &cntIntersections, &cntRoadSegments, &cntCars, &carsPerSecond);
     Intersection *intersections[cntIntersections];
     for (int i = 0; i < cntIntersections; i++) {
-        double x, y;
+        double x;
+        double y;
         scanf("%lf %lf", &x, &y);
         intersections[i] = new Intersection(x, y);
     }
     for (int i = 0; i < cntRoadSegments; i++) {
-        int A, B;
+        int A;
+        int B;
         double speedLimit;
         int capacity;
         scanf("%d %d %lf %d", &A, &B, &speedLimit, &capacity);
         assert(G->addRoadSegment(new RoadSegment(intersections[A], intersections[B], speedLimit, capacity)));
     }
-    for (int i = 0; i < cntConnections; i++) {
-        int intxn, from, to, type;
-        scanf("%d %d %d %d", &intxn, &from, &to, &type);
-        intersections[intxn]->connect(from, to, type);
+    for (int i = 0; i < cntIntersections; i++) {
+        intersections[i]->autoConnectAndLink();
     }
     for (int i = 0; i < cntCars; i++) {
-        Car *c = getRandomCar(G);
+        Car *c = getRandomCar(G, 0.0);
         c->setSpeed(c->getCurrentRoad()->getSpeedLimit());
     }
     for (int i = 0; i < cntIntersections; i++) {
-        intersections[i]->cycle();
+        controller->addEvent(0.0, intersections[i]->getID());
     }
 }
 
@@ -62,6 +67,7 @@ ConsoleDriver::~ConsoleDriver() {
 void ConsoleDriver::run() {
     bool exit = false;
     auto start = chrono::high_resolution_clock::now();
+    auto lastCarSpawn = chrono::high_resolution_clock::now();
     while (!exit) {
         auto end = chrono::high_resolution_clock::now();
         chrono::duration<double> elapsed = end - start;
@@ -70,10 +76,14 @@ void ConsoleDriver::run() {
             elapsed = end - start;
         }
         start = end;
-        sim->nextIteration(iterationsPerSecond);
-        for (int i = 0; i < carsPerIteration; i++) {
-            Car *c = getRandomCar(G);
-            c->setSpeed(c->getCurrentRoad()->getSpeedLimit());
+        sim->nextIteration(iterationLength);
+        chrono::duration<double> timeSinceLastCar = end - lastCarSpawn;
+        if (timeSinceLastCar.count() >= 1.0 / ((double) carsPerSecond)) {
+            for (int i = 0; i < (int) floor(timeSinceLastCar.count() * ((double) carsPerSecond)); i++) {
+                Car *c = getRandomCar(G, sim->getCurrentTime());
+                c->setSpeed(c->getCurrentRoad()->getSpeedLimit());
+            }
+            lastCarSpawn = end;
         }
         clearConsole();
         printToConsole();
@@ -100,8 +110,8 @@ void ConsoleDriver::printToConsole() {
     }
     for (pair<int, Intersection*> i : G->getIntersections()) {
         Point2D loc = i.second->getLocation();
-        int x = (int) (loc.x * 100);
-        int y = (int) (loc.y * 100);
+        int x = (int) (loc.x * SCALE_FACTOR);
+        int y = (int) (loc.y * SCALE_FACTOR);
         grid[y][x] = '+';
         grid[y][x + 1] = '+';
         grid[y + 1][x] = '+';
@@ -109,7 +119,7 @@ void ConsoleDriver::printToConsole() {
     }
     for (pair<int, RoadSegment*> r : G->getRoadSegments()) {
         Point2D src = r.second->getSource()->getLocation(), dest = r.second->getDestination()->getLocation();
-        int srcX = (int) (src.x * 100), srcY = (int) (src.y * 100), destX = (int) (dest.x * 100), destY = (int) (dest.y * 100);
+        int srcX = (int) (src.x * SCALE_FACTOR), srcY = (int) (src.y * SCALE_FACTOR), destX = (int) (dest.x * SCALE_FACTOR), destY = (int) (dest.y * SCALE_FACTOR);
         if (srcX == destX) {
             int adj = srcY > destY ? 1 : 0;
             for (int y = min(srcY, destY); y <= max(srcY, destY); y++) {
